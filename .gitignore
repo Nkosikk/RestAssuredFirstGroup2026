@@ -1,8 +1,8 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
-!**/src/test/**/target/
-
+!**/src/basic.UserRegistration/**/target/
+allure-results/
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
@@ -29,7 +29,7 @@ target/
 /.nb-gradle/
 build/
 !**/src/main/**/build/
-!**/src/test/**/build/
+!**/src/basic.UserRegistration/**/build/
 
 ### VS Code ###
 .vscode/
