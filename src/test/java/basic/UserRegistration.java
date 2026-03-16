@@ -39,15 +39,15 @@ public class UserRegistration {
 
         String apiPath = "/APIDEV/register";
         String registeredEmail = Faker.instance().internet().emailAddress();
-        String payload = "{\n" +
+        String payload = String.format( "{\n" +
                 "    \"firstName\": \"dsfdsa\",\n" +
                 "    \"lastName\": \"sdfdsaf\",\n" +
-                "    \"email\": "+registeredEmail+",\n" +
+                "    \"email\": \"%s\",\n" +
                 "    \"password\": \"@a12345678\",\n" +
                 "    \"confirmPassword\": \"@a12345678\",\n" +
                 "    \"phone\": \"\",\n" +
                 "    \"groupId\": \"5328c91e-fc40-11f0-8e00-5000e6331276\"\n" +
-                "}";
+                "}", registeredEmail);
 
         Response response = RestAssured.given()
                 .baseUri(baseURL)
