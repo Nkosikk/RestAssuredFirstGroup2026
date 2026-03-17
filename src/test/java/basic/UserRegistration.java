@@ -34,7 +34,7 @@ public class UserRegistration {
 
     }
 
-    @Test(priority = 2)
+    @Test(priority = 1)
     public void registerUser(){
 
         String apiPath = "/APIDEV/register";
@@ -62,5 +62,45 @@ public class UserRegistration {
         Assert.assertEquals(actualStatusCode, 201, "Status code should be 201");
         userId = response.jsonPath().getString("data.id");
         System.out.println("Registered User ID: " + userId);
+    }
+    @Test(priority = 2)
+    public void ActivateUser(){
+        String apiPath = "/APIDEV/admin/users/userId/status";
+        String payload = "{\n" +
+                "  \"isActive\": true\n" +
+                "}";
+
+        Response response = RestAssured.given()
+                .baseUri(baseURL)
+                .basePath(apiPath.replace("userId", userId))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + authToken)
+                .body(payload)
+                .log().all()
+                .put().prettyPeek();
+
+        int actualStatusCode = response.getStatusCode();
+        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
+        System.out.println("Activated User ID: " + userId);
+    }
+    @Test(priority = 3)
+    public void ApproveUser(){
+        String apiPath = "/APIDEV/admin/users/userId/approve";
+        String payload = "{\n" +
+                "  \"isApproved\": true\n" +
+                "}";
+
+        Response response = RestAssured.given()
+                .baseUri(baseURL)
+                .basePath(apiPath.replace("userId", userId))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + authToken)
+                .body(payload)
+                .log().all()
+                .put().prettyPeek();
+
+        int actualStatusCode = response.getStatusCode();
+        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
+        System.out.println("Approved User ID: " + userId);
     }
 }
