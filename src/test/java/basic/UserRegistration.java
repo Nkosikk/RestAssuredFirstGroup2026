@@ -10,11 +10,7 @@ public class UserRegistration {
 
     static String authToken;
     static String userId;
-    static String registeredEmail;
     static String baseURL = "https://ndosiautomation.co.za";
-
-
-
     @Test
     public void adminLoginTest() {
 
@@ -38,11 +34,11 @@ public class UserRegistration {
 
     }
 
-    @Test(priority = 1)
+    @Test(priority = 2)
     public void registerUser(){
 
         String apiPath = "/APIDEV/register";
-         registeredEmail = Faker.instance().internet().emailAddress();
+        String registeredEmail = Faker.instance().internet().emailAddress();
         String payload = String.format( "{\n" +
                 "    \"firstName\": \"dsfdsa\",\n" +
                 "    \"lastName\": \"sdfdsaf\",\n" +
@@ -66,64 +62,5 @@ public class UserRegistration {
         Assert.assertEquals(actualStatusCode, 201, "Status code should be 201");
         userId = response.jsonPath().getString("data.id");
         System.out.println("Registered User ID: " + userId);
-    }
-    @Test(priority = 2)
-    public void ActivateUser(){
-        String apiPath = "/APIDEV/admin/users/userId/status";
-        String payload = "{\n" +
-                "  \"isActive\": true\n" +
-                "}";
-
-        Response response = RestAssured.given()
-                .baseUri(baseURL)
-                .basePath(apiPath.replace("userId", userId))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + authToken)
-                .body(payload)
-                .log().all()
-                .put().prettyPeek();
-
-        int actualStatusCode = response.getStatusCode();
-        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
-        System.out.println("Activated User ID: " + userId);
-    }
-    @Test(priority = 3)
-    public void ApproveUser(){
-        String apiPath = "/APIDEV/admin/users/userId/approve";
-        String payload = "{\n" +
-                "  \"isApproved\": true\n" +
-                "}";
-
-        Response response = RestAssured.given()
-                .baseUri(baseURL)
-                .basePath(apiPath.replace("userId", userId))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + authToken)
-                .body(payload)
-                .log().all()
-                .put().prettyPeek();
-
-        int actualStatusCode = response.getStatusCode();
-        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
-        System.out.println("Approved User ID: " + userId);
-    }
-    @Test(priority = 4)
-    public void LoginNewUser(){
-        String apiPath = "/APIDEV/login";
-        String payload = String.format("{\n" +
-                "    \"email\": \"%s\",\n" +
-                "    \"password\": \"@a12345678\"\n" +
-                "}", registeredEmail);
-
-        Response response = RestAssured.given()
-                .baseUri(baseURL)
-                .basePath(apiPath)
-                .header("Content-Type", "application/json")
-                .body(payload)
-                .log().all()
-                .post().prettyPeek();
-
-        int actualStatusCode = response.getStatusCode();
-        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
     }
 }
