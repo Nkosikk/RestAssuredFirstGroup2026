@@ -10,7 +10,11 @@ public class UserRegistration {
 
     static String authToken;
     static String userId;
+    static String registeredEmail;
     static String baseURL = "https://ndosiautomation.co.za";
+
+
+
     @Test
     public void adminLoginTest() {
 
@@ -38,7 +42,7 @@ public class UserRegistration {
     public void registerUser(){
 
         String apiPath = "/APIDEV/register";
-        String registeredEmail = Faker.instance().internet().emailAddress();
+         registeredEmail = Faker.instance().internet().emailAddress();
         String payload = String.format( "{\n" +
                 "    \"firstName\": \"dsfdsa\",\n" +
                 "    \"lastName\": \"sdfdsaf\",\n" +
@@ -102,5 +106,24 @@ public class UserRegistration {
         int actualStatusCode = response.getStatusCode();
         Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
         System.out.println("Approved User ID: " + userId);
+    }
+    @Test(priority = 4)
+    public void LoginNewUser(){
+        String apiPath = "/APIDEV/login";
+        String payload = String.format("{\n" +
+                "    \"email\": \"%s\",\n" +
+                "    \"password\": \"@a12345678\"\n" +
+                "}", registeredEmail);
+
+        Response response = RestAssured.given()
+                .baseUri(baseURL)
+                .basePath(apiPath)
+                .header("Content-Type", "application/json")
+                .body(payload)
+                .log().all()
+                .post().prettyPeek();
+
+        int actualStatusCode = response.getStatusCode();
+        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
     }
 }
