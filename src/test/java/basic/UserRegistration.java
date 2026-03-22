@@ -63,4 +63,22 @@ public class UserRegistration {
         userId = response.jsonPath().getString("data.id");
         System.out.println("Registered User ID: " + userId);
     }
+    @Test(priority = 3)
+    public void ApproveUser() {
+
+        String apiPath = "/APIDEV/admin/users/userId/approve";
+
+
+        Response response = RestAssured.given()
+                .baseUri(baseURL)
+                .basePath(apiPath)
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer" + authToken)
+                .log().all()
+                .post().prettyPeek();
+
+        int actualStatusCode = response.getStatusCode();
+        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
+
+    }
 }

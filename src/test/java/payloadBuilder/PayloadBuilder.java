@@ -24,5 +24,17 @@ public class PayloadBuilder {
 
         return registerUser;
     }
+   public static JSONObject approveUserPayload() {
+        JSONObject approveUser = new JSONObject();
+
+        return approveUser;
+    }
+    public static JSONObject approveAdminUserPayload(String Admin){
+        JSONObject approveAdminUser = new JSONObject();
+        approveAdminUser.put("role",Admin);
+        return approveAdminUser;
+
+    }
+
 
 }
