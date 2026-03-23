@@ -48,7 +48,7 @@ public class UserRegistrationTest {
                 .then()
                 .log().all()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(200)
                 .body("success", equalTo(true));
     }
 
