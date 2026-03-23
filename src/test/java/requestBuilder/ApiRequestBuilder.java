@@ -2,14 +2,13 @@ package requestBuilder;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.testng.Assert;
 
 import static common.BaseURIs.baseURL;
 import static payloadBuilder.PayloadBuilder.loginUserPayload;
 import static payloadBuilder.PayloadBuilder.registerUserPayload;
 
 
-public class apiRequestBuilder {
+public class ApiRequestBuilder {
 
     static String authToken;
     static String registeredUserId;
@@ -51,6 +50,7 @@ public class apiRequestBuilder {
                 .baseUri(baseURL)
                 .basePath(apiPath)
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + authToken)
                 .log().all()
                 .put()
                 .then().extract().response();
