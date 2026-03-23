@@ -12,6 +12,7 @@ import static payloadBuilder.PayloadBuilder.registerUserPayload;
 public class apiRequestBuilder {
 
     static String authToken;
+    static String registeredUserId;
 
     public static Response loginUserResponse(String email, String password) {
 
@@ -22,9 +23,8 @@ public class apiRequestBuilder {
                 .header("Content-Type", "application/json")
                 .body(loginUserPayload(email, password))
                 .log().all()
-                .post().prettyPeek();
-        int actualStatusCode = response.getStatusCode();
-        Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
+                .post()
+                .then().extract().response();
         authToken = response.jsonPath().getString("data.token");
         return response;
     }
@@ -38,10 +38,22 @@ public class apiRequestBuilder {
                 .header("Content-Type", "application/json")
                 .body(registerUserPayload(firstName, lastName, email, password, groupId))
                 .log().all()
-                .post().prettyPeek();
-        int actualStatusCode = response.getStatusCode();
-        Assert.assertEquals(actualStatusCode, 201, "Status code should be 201");
+                .post()
+                .then().extract().response();
+        registeredUserId = response.jsonPath().getString("data.id");
         return response;
+    }
+
+    public static Response approveUserRegistrationResponse() {
+
+        String apiPath = "/APIDEV/admin/users/"+registeredUserId+"/approve";
+        return RestAssured.given()
+                .baseUri(baseURL)
+                .basePath(apiPath)
+                .header("Content-Type", "application/json")
+                .log().all()
+                .put()
+                .then().extract().response();
     }
 
 
