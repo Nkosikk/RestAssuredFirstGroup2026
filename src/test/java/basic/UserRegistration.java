@@ -10,6 +10,7 @@ public class UserRegistration {
 
     static String authToken;
     static String userId;
+    static String registeredEmail;
     static String baseURL = "https://ndosiautomation.co.za";
     String registeredEmail;
     @Test
@@ -39,7 +40,11 @@ public class UserRegistration {
     public void registerUser(){
 
         String apiPath = "/APIDEV/register";
+<<<<<<< HEAD
           registeredEmail = Faker.instance().internet().emailAddress();
+=======
+        registeredEmail = Faker.instance().internet().emailAddress();
+>>>>>>> origin/main
         String payload = String.format( "{\n" +
                 "    \"firstName\": \"dsfdsa\",\n" +
                 "    \"lastName\": \"sdfdsaf\",\n" +
@@ -65,12 +70,20 @@ public class UserRegistration {
         System.out.println("Registered User ID: " + userId);
     }
 
+<<<<<<< HEAD
 
 
     @Test(priority = 3)
     public void approveUser(){
 
         String apiPath = "/APIDEV/admin/users/"+userId+"/approve";
+=======
+    @Test(priority = 3)
+    public void approveUserRegistration(){
+
+        String apiPath = "/APIDEV/admin/users/"+userId+"/approve";
+
+>>>>>>> origin/main
         Response response = RestAssured.given()
                 .baseUri(baseURL)
                 .basePath(apiPath)
@@ -88,7 +101,10 @@ public class UserRegistration {
     public void userLoginTest() {
 
         String apiPath = "/APIDEV/login";
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
         String payload = String.format( "{\n" +
                 "    \"email\": \"%s\",\n" +
                 "    \"password\": \"@a12345678\"\n" +
@@ -104,7 +120,14 @@ public class UserRegistration {
 
         int actualStatusCode = response.getStatusCode();
         Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
+<<<<<<< HEAD
         authToken = response.jsonPath().getString("data.token");
 
     }
+=======
+
+    }
+
+
+>>>>>>> origin/main
 }
