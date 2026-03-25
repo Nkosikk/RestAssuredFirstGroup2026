@@ -1,18 +1,27 @@
 package tests;
 
 import com.github.javafaker.Faker;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import requestBuilder.ApiRequestBuilder;
+import utils.DatabaseConnection;
+
+import java.sql.SQLException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class UserRegistrationTest {
 
     static String registeredEmail;
+
+    @BeforeClass
+    public void setup() throws SQLException {
+        DatabaseConnection.dbConnection();
+    }
     @Test
     public void adminLoginTest(){
 
-        ApiRequestBuilder.loginUserResponse("spare@admin.com", "@12345678")
+        ApiRequestBuilder.loginUserResponse(DatabaseConnection.getEmail, DatabaseConnection.getPassword)
                 .then()
                 .log().all()
                 .assertThat()
