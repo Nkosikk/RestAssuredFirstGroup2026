@@ -21,7 +21,7 @@ public class UserRegistrationTest {
     @Test
     public void adminLoginTest(){
 
-        ApiRequestBuilder.loginUserResponse(DatabaseConnection.getEmail, DatabaseConnection.getPassword)
+        ApiRequestBuilder.loginUserResponse(DatabaseConnection.Email, DatabaseConnection.Password)
                 .then()
                 .log().all()
                 .assertThat()
