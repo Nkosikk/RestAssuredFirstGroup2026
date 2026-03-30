@@ -91,7 +91,7 @@ public class UserRegistration {
                 "    \"email\": \"%s\",\n" +
                 "    \"password\": \"@a12345678\"\n" +
                 "}", registeredEmail);
-
+// delete this once done
         Response response = RestAssured.given()
                 .baseUri(baseURL)
                 .basePath(apiPath)
@@ -104,6 +104,8 @@ public class UserRegistration {
         Assert.assertEquals(actualStatusCode, 200, "Status code should be 200");
 
     }
+
+    //ToDo delete this once done
 
 
 }
