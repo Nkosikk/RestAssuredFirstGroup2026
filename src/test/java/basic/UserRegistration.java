@@ -91,7 +91,7 @@ public class UserRegistration {
                 "    \"email\": \"%s\",\n" +
                 "    \"password\": \"@a12345678\"\n" +
                 "}", registeredEmail);
-// delete this once done
+
         Response response = RestAssured.given()
                 .baseUri(baseURL)
                 .basePath(apiPath)
