@@ -97,13 +97,32 @@ jobs:
           to: fitness.seed@gmail.com
           # Sender email address
           from: ${{ secrets.EMAIL_USERNAME }}
-          # Message body in the email
-          body: Hi,
+          # Message body in the email (supports plain text or HTML)
+          body: |
+            Hi Team,
             
-            please find attached the latest Allure Report.
+            ═══════════════════════════════════════════════════════════
+            TEST EXECUTION REPORT
+            ═══════════════════════════════════════════════════════════
             
-            Kind Regards
+            Repository:    ${{ github.repository }}
+            Branch:        ${{ github.ref_name }}
+            Commit:        ${{ github.sha }}
+            Run Number:    ${{ github.run_number }}
+            Triggered by:  ${{ github.actor }}
+            Status:        COMPLETED
+            
+            ═══════════════════════════════════════════════════════════
+            
+            Please find the Allure test report attached to this email.
+            
+            For more details, visit:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Kind Regards,
             Avela Team Lead
+            
+            ═══════════════════════════════════════════════════════════
 
           # Attach the generated report file to the email
           attachments: allure-report/index.html
