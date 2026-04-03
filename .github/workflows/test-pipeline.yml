@@ -28,7 +28,7 @@ jobs:
       
       - name: Run tests (Parallel Execution)
         timeout-minutes: 15
-        run: mvn test -DthreadCount=4
+        run: mvn test -DthreadCount=2
         env:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
