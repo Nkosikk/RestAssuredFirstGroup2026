@@ -120,7 +120,7 @@ jobs:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
             Kind Regards,
-            Avela Team Lead
+            Team Lead
             
             ═══════════════════════════════════════════════════════════
 
