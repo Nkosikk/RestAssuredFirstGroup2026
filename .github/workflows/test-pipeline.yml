@@ -10,6 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     steps:
       - name: Checkout code
@@ -23,10 +24,11 @@ jobs:
           cache: maven
       
       - name: Build project
-        run: mvn clean install -DskipTests
+        run: mvn clean install -DskipTests -q
       
-      - name: Run tests
-        run: mvn test
+      - name: Run tests (Parallel Execution)
+        timeout-minutes: 15
+        run: mvn test -DthreadCount=4
         env:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
