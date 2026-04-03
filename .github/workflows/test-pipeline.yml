@@ -78,3 +78,32 @@ jobs:
         with:
           name: allure-report
           path: allure-report/
+
+      # Step 5: Send the report by email
+      - name: Send Email with Extent Report
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # SMTP server used to send the email
+          server_address: smtp.gmail.com
+          # SMTP port for secure TLS email sending
+          server_port: 587
+          # Email username stored securely in GitHub secrets
+          username: ${{ secrets.EMAIL_USERNAME }}
+          # Email password or app password stored securely in GitHub secrets
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          # Subject line of the email
+          subject: Automation Test Results - Allure Report for 1st Group
+          # Recipient email address
+          to: fitness.seed@gmail.com
+          # Sender email address
+          from: ${{ secrets.EMAIL_USERNAME }}
+          # Message body in the email
+          body: Hi,
+            
+            please find attached the latest Allure Report.
+            
+            Kind Regards
+            Avela Team Lead
+
+          # Attach the generated report file to the email
+          attachments: allure-report/index.html
