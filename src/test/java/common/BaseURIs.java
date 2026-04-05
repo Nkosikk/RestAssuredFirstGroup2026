@@ -1,6 +1,6 @@
 package common;
 
 public class BaseURIs {
-    public static String baseURL = "https://ndosiautomation.co.za";
+    public static String baseURI = "https://ndosiautomation.co.za";
 
 }

@@ -3,7 +3,6 @@ package tests;
 import com.github.javafaker.Faker;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import requestBuilder.ApiRequestBuilder;
 import utils.DatabaseConnection;
 
 import java.sql.SQLException;
