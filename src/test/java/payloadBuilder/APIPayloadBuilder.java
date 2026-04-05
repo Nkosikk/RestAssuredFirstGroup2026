@@ -2,8 +2,10 @@ package payloadBuilder;
 
 import org.json.simple.JSONObject;
 
-public class PayloadBuilder {
+public class APIPayloadBuilder {
 
+    // This method is used to create a payload for logging in a user. It takes the user's email and password as parameters
+    // and returns a JSONObject containing these details.
     public static JSONObject loginUserPayload(String email, String password) {
 
         JSONObject loginUser = new JSONObject();
@@ -13,6 +15,8 @@ public class PayloadBuilder {
         return loginUser;
     }
 
+    // This method is used to create a payload for registering a new user. It takes the user's first name, last name, email, password, and group ID as parameters
+    // and returns a JSONObject containing these details.
     public static JSONObject registerUserPayload(String firstName, String lastName, String email, String password, String groupId) {
         JSONObject registerUser = new JSONObject();
         registerUser.put("firstName", firstName);
@@ -24,5 +28,4 @@ public class PayloadBuilder {
 
         return registerUser;
     }
-
 }
