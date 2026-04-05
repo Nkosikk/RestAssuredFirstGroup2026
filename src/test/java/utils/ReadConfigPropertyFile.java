@@ -1,24 +1,39 @@
 package utils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ReadConfigPropertyFile {
     private static Properties p;
 
     static {
-        try {
-            FileInputStream fr = new FileInputStream(System.getProperty("user.dir") + "/src/test/resources/configfiles/config.properties");
-            p = new Properties();
-            p.load(fr);
-            fr.close();
+        loadProperties();
+    }
+
+    private static  void loadProperties() {
+        if (p != null) {
+            return;
+        }
+
+        Path configPath = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "config.properties");
+        Properties loaded = new Properties();
+
+        try (InputStream inputStream = Files.newInputStream(configPath)) {
+            loaded.load(inputStream);
+            p = loaded;
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to load config properties from: " + configPath.toAbsolutePath(), e);
         }
     }
 
     public static String getProperty(String propertyName) {
+        if (p == null) {
+            loadProperties();
+        }
         return p.getProperty(propertyName);
     }
 }
