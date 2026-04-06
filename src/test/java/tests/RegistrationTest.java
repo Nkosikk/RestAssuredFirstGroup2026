@@ -11,79 +11,80 @@ import static utils.ReadEnvFile.*;
 
 public class RegistrationTest {
 
-    public static String registeredEmail;
-    @Test(priority = 1)
-    public void adminLoginTest() {
+    private String registeredEmail;
+
+    public void adminLogin() {
         APIRequestBuilder.loginUserResponse(getAdminEmail(), getAdminPassword())
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(200)
-                .body("message", equalTo("Login successful"));
+                .body("message", equalTo("Login successful"), "success", equalTo(true));
     }
 
+    @Test(priority = 1)
+    public void adminLoginTest() {
+        adminLogin();
+    }
 
-    @Test(priority = 2)
+    @Test(priority = 2, dependsOnMethods = "adminLoginTest")
     public void userRegistrationTest() {
-       registeredEmail = generateEmail();
+        registeredEmail = generateEmail();
         APIRequestBuilder.registerUserResponse(generateFirstName(), generateLastName(), registeredEmail, getUserPassword(), getGroupId())
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(201)
-                .body("message", equalTo("Registration submitted successfully. Your account is pending admin approval."));
+                .body("message", equalTo("Registration submitted successfully. Your account is pending admin approval."), "success", equalTo(true));
+
     }
 
-    @Test(priority = 3)
+    @Test(priority = 3, dependsOnMethods = "userRegistrationTest")
     public void approveUserTest() {
-       APIRequestBuilder.approveUserResponse()
+        APIRequestBuilder.approveUserResponse()
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(200)
-                .body("message", equalTo("User approved successfully"));
+                .body("message", equalTo("User approved successfully"), "data.approvalStatus", equalTo("approved"), "success", equalTo(true));
     }
 
-     @Test(priority = 4)
+    @Test(priority = 4, dependsOnMethods = "approveUserTest")
     public void updateUserRoleTest() {
-       APIRequestBuilder.updateUserRoleResponse(getRoleType())
-                 .then()
-                 .log().all()
-                 .assertThat()
-                 .statusCode(200)
-                 .body("message", equalTo("User role updated successfully"),"data.role", equalTo("admin"));
+        APIRequestBuilder.updateUserRoleResponse(getRoleType())
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(200)
+                .body("message", equalTo("User role updated successfully"), "data.role", equalTo("admin"));
     }
 
-     @Test(priority = 5)
+    @Test(priority = 5, dependsOnMethods = "updateUserRoleTest")
     public void userLoginTest() {
-         APIRequestBuilder.loginUserResponse(registeredEmail, getUserPassword())
-                 .then()
-                 .log().all()
-                 .assertThat()
-                 .statusCode(200)
-                 .body("message", equalTo("Login successful"));
-
-    }
-
-    @Test(priority = 6)
-    public void adminLoginTest2() {
-        APIRequestBuilder.loginUserResponse(getAdminEmail(), getAdminPassword())
+        APIRequestBuilder.loginUserResponse(registeredEmail, getUserPassword())
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(200)
                 .body("message", equalTo("Login successful"));
+
+        System.out.println("Registered User Email: " + registeredEmail);
     }
 
-     @Test(priority = 7)
+    @Test(priority = 6, dependsOnMethods = "userLoginTest")
+    public void adminLoginAgainTest() {
+        APIRequestBuilder.loginUserResponse(getAdminEmail(), getAdminPassword());
+                adminLogin();
+    }
+
+    @Test(priority = 7, dependsOnMethods = "adminLoginAgainTest")
     public void deleteUserTest() {
-            APIRequestBuilder.deleteUserResponse()
-                    .then()
-                    .log().all()
-                    .assertThat()
-                    .statusCode(200)
-                    .body("message", equalTo("User deleted successfully"));
+        APIRequestBuilder.deleteUserResponse()
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(200)
+                .body("message", equalTo("User deleted successfully"), "success", equalTo(true));
+
     }
-
-
 }
