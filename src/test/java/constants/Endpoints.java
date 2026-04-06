@@ -8,9 +8,11 @@ public class Endpoints {
     public static String registerendpoint = ReadConfigPropertyFile.getProperty("api.registerendpoint");
     public static String loginendpoint = ReadConfigPropertyFile.getProperty("api.loginendpoint");
     public static String approveusersendpoint = ReadConfigPropertyFile.getProperty("api.approveusersendpoint");
+    public static String adminendpoint = ReadConfigPropertyFile.getProperty("api.adminendpoint");
     public static String adminusersendpoint = ReadConfigPropertyFile.getProperty("api.adminusersendpoint");
     public static String roleendpoint = ReadConfigPropertyFile.getProperty("api.roleendpoint");
     public static String deleteuserendpoint = ReadConfigPropertyFile.getProperty("api.deleteuserendpoint");
+
 
 
 }

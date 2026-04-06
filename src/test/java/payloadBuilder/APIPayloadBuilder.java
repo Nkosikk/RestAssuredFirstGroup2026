@@ -28,4 +28,12 @@ public class APIPayloadBuilder {
 
         return registerUser;
     }
+
+    public static JSONObject updateUserPayload(String role) {
+
+        JSONObject updateUser = new JSONObject();
+        updateUser.put("role", role);
+
+        return updateUser;
+    }
 }

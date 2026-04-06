@@ -19,7 +19,7 @@ public class ReadConfigPropertyFile {
             return;
         }
 
-        Path configPath = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "config.properties");
+        Path configPath = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "configFiles/config.properties");
         Properties loaded = new Properties();
 
         try (InputStream inputStream = Files.newInputStream(configPath)) {
@@ -35,5 +35,15 @@ public class ReadConfigPropertyFile {
             loadProperties();
         }
         return p.getProperty(propertyName);
+    }
+
+    public static String getGroupId() {
+
+        return getProperty("api.groupid");
+    }
+
+    public static String getRoleType() {
+
+        return getProperty("api.roletype");
     }
 }
