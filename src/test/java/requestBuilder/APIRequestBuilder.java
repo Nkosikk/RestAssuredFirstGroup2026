@@ -70,6 +70,8 @@ public class APIRequestBuilder {
         return response;
     }
 
+    // This method is used to send a request to update a user's role.
+    // It takes the new role as a parameter and includes it in the request body.
     public static Response updateUserRoleResponse(String role) {
 
         Response response = RestAssured.given()
@@ -85,6 +87,7 @@ public class APIRequestBuilder {
     }
 
     // This method is used to send a request to delete a user.
+    // It uses the user ID stored in the static variable and includes the authentication token in the request header for authorization.
     public static Response deleteUserResponse(){
 
         Response response = RestAssured.given()

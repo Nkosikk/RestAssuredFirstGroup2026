@@ -29,6 +29,8 @@ public class APIPayloadBuilder {
         return registerUser;
     }
 
+    // This method is used to create a payload for updating a user's role. It takes the new role as a parameter
+    // and returns a JSONObject containing this detail.
     public static JSONObject updateUserPayload(String role) {
 
         JSONObject updateUser = new JSONObject();
