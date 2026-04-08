@@ -9,7 +9,7 @@ import static utils.ReadConfigPropertyFile.getGroupId;
 import static utils.ReadConfigPropertyFile.getRoleType;
 import static utils.ReadEnvFile.*;
 
-public class APIRegistrationTest {
+public class UserRegistrationTest {
 
     private String registeredEmail;
 
