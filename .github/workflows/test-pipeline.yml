@@ -124,8 +124,8 @@ jobs:
           path: allure-report/
 
       # Step 13: Send test report via email using Gmail SMTP
-      # Notifies team of test results with links to the Allure report
-      # NOTE: Gmail blocks HTML/ZIP attachments, so we use links instead
+      # Embeds the TestNG emailable-report.html directly as the HTML email body
+      # This avoids Gmail blocking HTML file attachments
       - name: Send Email with Allure Report
         if: always()
         uses: dawidd6/action-send-mail@v3
@@ -140,7 +140,10 @@ jobs:
           subject: Rest Assured Automation Test Results - Allure Report for 1st Group  # Email subject line
           to: fitness.seed@gmail.com                        # Recipient email address
           from: ${{ secrets.EMAIL_USERNAME }}               # Sender email address
-          # Message body with test execution details and test results summary
+          # HTML body: embeds the self-contained TestNG emailable report directly in the email
+          # Recipients see a fully formatted test results table rendered inline
+          html_body: file://target/surefire-reports/emailable-report.html
+          # Plain text fallback for email clients that don't support HTML
           body: |
             Hi Team,
             
@@ -176,6 +179,4 @@ jobs:
             
             ═══════════════════════════════════════════════════════════
 
-          # Attachment: TestNG emailable report (self-contained HTML with test results)
-          attachments: target/surefire-reports/index.html
 
