@@ -177,5 +177,5 @@ jobs:
             ═══════════════════════════════════════════════════════════
 
           # Attachment: TestNG emailable report (self-contained HTML with test results)
-          attachments: target/surefire-reports/emailable-report.html
+          attachments: target/surefire-reports/index.html
 
