@@ -39,7 +39,7 @@ jobs:
 
       # Step 4: Build the project (compile code, skip running tests)
       - name: Build project
-        run: mvn clean install -DskipTests -q
+        run: mvn clean install -DskipTests -q #mvn clean test
 
       # Step 5: Run TestNG tests from testng.xml configuration file
       - name: Run TestNG suite (testng.xml)
@@ -82,18 +82,48 @@ jobs:
           path: allure-results/
 
       # Step 9: Install Allure CLI globally using npm
-      # Required to generate HTML reports from test results
+          # Required to generate HTML reports from test results
       - name: Install Allure CLI
         if: always()
         run: npm install -g allure-commandline --save-dev
 
       # Step 10: Generate Allure HTML report from test results
-      # Creates a beautiful, interactive test report
+      # Creates a regular multi-file report (for artifact upload)
+      # AND a self-contained single-file report (for email attachment)
       - name: Generate Allure Report
         if: always()
-        run: allure generate allure-results --clean -o allure-report
+        run: |
+          allure generate allure-results --clean -o allure-report
+          allure generate allure-results --clean --single-file -o allure-report-single
 
-      # Step 11: Upload generated Allure HTML report as artifact
+      # Step 11: Zip the full Allure report for email attachment
+      # The single-file HTML is best, but the zip provides a full interactive backup
+      - name: Zip Allure Report
+        if: always()
+        run: zip -r allure-report.zip allure-report/
+
+      # Step 12: Extract test results summary from TestNG XML
+      # Parses pass/fail/skip counts to embed in the email body
+      - name: Extract Test Summary
+        if: always()
+        run: |
+          if [ -f target/surefire-reports/testng-results.xml ]; then
+            TOTAL=$(grep -oE 'total="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            PASSED=$(grep -oE 'passed="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            FAILED=$(grep -oE 'failed="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            SKIPPED=$(grep -oE 'skipped="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            echo "TEST_TOTAL=${TOTAL:-0}" >> $GITHUB_ENV
+            echo "TEST_PASSED=${PASSED:-0}" >> $GITHUB_ENV
+            echo "TEST_FAILED=${FAILED:-0}" >> $GITHUB_ENV
+            echo "TEST_SKIPPED=${SKIPPED:-0}" >> $GITHUB_ENV
+          else
+            echo "TEST_TOTAL=N/A" >> $GITHUB_ENV
+            echo "TEST_PASSED=N/A" >> $GITHUB_ENV
+            echo "TEST_FAILED=N/A" >> $GITHUB_ENV
+            echo "TEST_SKIPPED=N/A" >> $GITHUB_ENV
+          fi
+
+      # Step 13: Upload generated Allure HTML report as artifact
       # Makes the HTML report downloadable from GitHub Actions UI
       - name: Upload Allure HTML Report
         if: always()
@@ -102,9 +132,10 @@ jobs:
           name: allure-report
           path: allure-report/
 
-      # Step 12: Send test report via email using Gmail SMTP
+      # Step 14: Send test report via email using Gmail SMTP
       # Notifies team of test results with attached Allure report
       - name: Send Email with Allure Report
+        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           # SMTP server configuration
@@ -117,7 +148,7 @@ jobs:
           subject: Rest Assured Automation Test Results - Allure Report for 1st Group  # Email subject line
           to: fitness.seed@gmail.com                        # Recipient email address
           from: ${{ secrets.EMAIL_USERNAME }}               # Sender email address
-          # Message body with test execution details and formatting
+          # Message body with test execution details and test results summary
           body: |
             Hi Team,
             
@@ -125,18 +156,31 @@ jobs:
             TEST EXECUTION REPORT
             ═══════════════════════════════════════════════════════════
             
-            Repository:    ${{ github.repository }}          # Repository name
-            Branch:        ${{ github.ref_name }}            # Branch name
-            Commit:        ${{ github.sha }}                 # Commit hash
-            Run Number:    ${{ github.run_number }}          # Pipeline run number
-            Triggered by:  ${{ github.actor }}               # User who triggered pipeline
-            Status:        COMPLETED                         # Test execution status
+            Repository:    ${{ github.repository }}
+            Branch:        ${{ github.ref_name }}
+            Commit:        ${{ github.sha }}
+            Run Number:    ${{ github.run_number }}
+            Triggered by:  ${{ github.actor }}
+            Status:        COMPLETED
+            
+            ───────────────────────────────────────────────────────────
+            TEST RESULTS SUMMARY
+            ───────────────────────────────────────────────────────────
+            
+            Total Tests:   ${{ env.TEST_TOTAL }}
+            ✅ Passed:      ${{ env.TEST_PASSED }}
+            ❌ Failed:      ${{ env.TEST_FAILED }}
+            ⏭️ Skipped:     ${{ env.TEST_SKIPPED }}
             
             ═══════════════════════════════════════════════════════════
             
-            Please find the Allure test report attached to this email.
+            📎 ATTACHMENTS:
+            1. allure-report-single/index.html → Self-contained Allure report
+               (Open directly in any browser to view the full interactive report)
+            2. allure-report.zip → Full Allure report archive
+               (Unzip and open index.html for the complete report with all assets)
             
-            For more details, visit:
+            🔗 For full pipeline details and downloadable artifacts, visit:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
             Kind Regards,
@@ -144,5 +188,5 @@ jobs:
             
             ═══════════════════════════════════════════════════════════
 
-          # Attachment: Allure report HTML file
-          attachments: allure-report/index.html
+          # Attachments: Self-contained single-file Allure report + zipped full report
+          attachments: allure-report-single/index.html,allure-report.zip
