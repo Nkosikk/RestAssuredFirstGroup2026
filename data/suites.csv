@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","1277","adminLoginTest","API Suite","2026-04-10","broken","2026-04-10","tests.UserRegistrationTest","API Tests","tests.UserRegistrationTest","adminLoginTest"
+"","3013","test","API Suite","2026-04-10","failed","2026-04-10","tests.ImprovedAPITests","API Tests","tests.ImprovedAPITests","test"
+"","0","userLoginTest","API Suite","2026-04-10","skipped","2026-04-10","tests.UserRegistrationTest","API Tests","tests.UserRegistrationTest","userLoginTest"
+"","0","userRegistration","API Suite","2026-04-10","skipped","2026-04-10","tests.UserRegistrationTest","API Tests","tests.UserRegistrationTest","userRegistration"
+"","0","approveUserRegistration","API Suite","2026-04-10","skipped","2026-04-10","tests.UserRegistrationTest","API Tests","tests.UserRegistrationTest","approveUserRegistration"
