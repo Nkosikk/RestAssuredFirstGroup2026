@@ -124,10 +124,8 @@ jobs:
           path: allure-report/
 
       # Step 13: Send test report via email using Gmail SMTP
-      # Embeds the TestNG emailable-report.html directly as the HTML email body
-      # This avoids Gmail blocking HTML file attachments
+      # Notifies team of test results with attached Allure report
       - name: Send Email with Allure Report
-        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           # SMTP server configuration
@@ -140,43 +138,42 @@ jobs:
           subject: Rest Assured Automation Test Results - Allure Report for 1st Group  # Email subject line
           to: fitness.seed@gmail.com                        # Recipient email address
           from: ${{ secrets.EMAIL_USERNAME }}               # Sender email address
-          # HTML body: embeds the self-contained TestNG emailable report directly in the email
-          # Recipients see a fully formatted test results table rendered inline
-          html_body: file://target/surefire-reports/emailable-report.html
-          # Plain text fallback for email clients that don't support HTML
+          # Message body with test execution details and formatting
           body: |
             Hi Team,
             
             ═══════════════════════════════════════════════════════════
-            TEST EXECUTION REPORT
+                          TEST EXECUTION REPORT
             ═══════════════════════════════════════════════════════════
             
-            Repository:    ${{ github.repository }}
-            Branch:        ${{ github.ref_name }}
-            Commit:        ${{ github.sha }}
-            Run Number:    ${{ github.run_number }}
+            Repository  :  ${{ github.repository }}
+            Branch      :  ${{ github.ref_name }}
+            Commit      :  ${{ github.sha }}
+            Run Number  :  ${{ github.run_number }}
             Triggered by:  ${{ github.actor }}
-            Status:        COMPLETED
+            Status      :  COMPLETED
             
             ───────────────────────────────────────────────────────────
-            TEST RESULTS SUMMARY
+                          TEST RESULTS SUMMARY
             ───────────────────────────────────────────────────────────
             
-            Total Tests:   ${{ env.TEST_TOTAL }}
-            ✅ Passed:      ${{ env.TEST_PASSED }}
-            ❌ Failed:      ${{ env.TEST_FAILED }}
-            ⏭️ Skipped:     ${{ env.TEST_SKIPPED }}
+            Total Tests :  ${{ env.TEST_TOTAL }}
+            ✅ Passed    :  ${{ env.TEST_PASSED }}
+            ❌ Failed    :  ${{ env.TEST_FAILED }}
+            ⏭️ Skipped   :  ${{ env.TEST_SKIPPED }}
             
             ═══════════════════════════════════════════════════════════
             
-            📦 Download Artifacts from GitHub Actions:
+            Please find the Allure test report attached to this email.
+            
+            For more details, visit:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            ═══════════════════════════════════════════════════════════
             
             Kind Regards,
             Team Lead
             
             ═══════════════════════════════════════════════════════════
 
+          # Attachment: Allure report HTML file
+          attachments: target/surefire-reports/emailable-report.html
 
