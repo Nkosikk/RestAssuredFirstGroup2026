@@ -14,11 +14,6 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Force Node 24 for compatibility
 
-# Permissions required for GitHub Pages deployment
-permissions:
-  contents: write               # Needed to push to gh-pages branch
-  pages: write                  # Needed for Pages deployment
-
 # Job definitions
 jobs:
   test:
@@ -128,18 +123,7 @@ jobs:
           name: allure-report
           path: allure-report/
 
-      # Step 13: Deploy Allure report to GitHub Pages
-      # Publishes the interactive report to https://<owner>.github.io/<repo>/
-      # NOTE: Enable GitHub Pages in repo Settings → Pages → Source: "gh-pages" branch
-      - name: Deploy Allure Report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          keep_files: false
-
-      # Step 14: Send test report via email using Gmail SMTP
+      # Step 13: Send test report via email using Gmail SMTP
       # Notifies team of test results with links to the Allure report
       # NOTE: Gmail blocks HTML/ZIP attachments, so we use links instead
       - name: Send Email with Allure Report
@@ -182,9 +166,6 @@ jobs:
             
             ═══════════════════════════════════════════════════════════
             
-            📊 VIEW FULL ALLURE REPORT (Interactive):
-            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-            
             📦 Download Artifacts from GitHub Actions:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
@@ -194,4 +175,7 @@ jobs:
             Team Lead
             
             ═══════════════════════════════════════════════════════════
+
+          # Attachment: TestNG emailable report (self-contained HTML with test results)
+          attachments: target/surefire-reports/emailable-report.html
 
