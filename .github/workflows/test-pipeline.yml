@@ -14,6 +14,11 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Force Node 24 for compatibility
 
+# Permissions required for GitHub Pages deployment
+permissions:
+  contents: write               # Needed to push to gh-pages branch
+  pages: write                  # Needed for Pages deployment
+
 # Job definitions
 jobs:
   test:
@@ -88,21 +93,12 @@ jobs:
         run: npm install -g allure-commandline --save-dev
 
       # Step 10: Generate Allure HTML report from test results
-      # Creates a regular multi-file report (for artifact upload)
-      # AND a self-contained single-file report (for email attachment)
+      # Creates a beautiful, interactive test report
       - name: Generate Allure Report
         if: always()
-        run: |
-          allure generate allure-results --clean -o allure-report
-          allure generate allure-results --clean --single-file -o allure-report-single
+        run: allure generate allure-results --clean -o allure-report
 
-      # Step 11: Zip the full Allure report for email attachment
-      # The single-file HTML is best, but the zip provides a full interactive backup
-      - name: Zip Allure Report
-        if: always()
-        run: zip -r allure-report.zip allure-report/
-
-      # Step 12: Extract test results summary from TestNG XML
+      # Step 11: Extract test results summary from TestNG XML
       # Parses pass/fail/skip counts to embed in the email body
       - name: Extract Test Summary
         if: always()
@@ -123,7 +119,7 @@ jobs:
             echo "TEST_SKIPPED=N/A" >> $GITHUB_ENV
           fi
 
-      # Step 13: Upload generated Allure HTML report as artifact
+      # Step 12: Upload generated Allure HTML report as artifact
       # Makes the HTML report downloadable from GitHub Actions UI
       - name: Upload Allure HTML Report
         if: always()
@@ -132,8 +128,20 @@ jobs:
           name: allure-report
           path: allure-report/
 
+      # Step 13: Deploy Allure report to GitHub Pages
+      # Publishes the interactive report to https://<owner>.github.io/<repo>/
+      # NOTE: Enable GitHub Pages in repo Settings → Pages → Source: "gh-pages" branch
+      - name: Deploy Allure Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          keep_files: false
+
       # Step 14: Send test report via email using Gmail SMTP
-      # Notifies team of test results with attached Allure report
+      # Notifies team of test results with links to the Allure report
+      # NOTE: Gmail blocks HTML/ZIP attachments, so we use links instead
       - name: Send Email with Allure Report
         if: always()
         uses: dawidd6/action-send-mail@v3
@@ -174,19 +182,16 @@ jobs:
             
             ═══════════════════════════════════════════════════════════
             
-            📎 ATTACHMENTS:
-            1. allure-report-single/index.html → Self-contained Allure report
-               (Open directly in any browser to view the full interactive report)
-            2. allure-report.zip → Full Allure report archive
-               (Unzip and open index.html for the complete report with all assets)
+            📊 VIEW FULL ALLURE REPORT (Interactive):
+            https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
             
-            🔗 For full pipeline details and downloadable artifacts, visit:
+            📦 Download Artifacts from GitHub Actions:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            ═══════════════════════════════════════════════════════════
             
             Kind Regards,
             Team Lead
             
             ═══════════════════════════════════════════════════════════
 
-          # Attachments: Self-contained single-file Allure report + zipped full report
-          attachments: allure-report-single/index.html,allure-report.zip
