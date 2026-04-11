@@ -78,6 +78,9 @@
             <version>9.3.0</version>
         </dependency>
 
+        <!--SnakeYAML is a Java library used to read (parse) and write YAML files.
+        It provides a simple and efficient way to work with YAML data in Java applications.
+        SnakeYAML lets your Java code understand .yml or .yaml files.-->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
