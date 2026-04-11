@@ -44,6 +44,16 @@ on:
   #   branches: [ main ]        # Runs automatically when a PR targets main
 
 # ┌──────────────────────────────────────────────────────────────────────────┐
+# │ PART C: PERMISSIONS                                                      │
+# │                                                                          │
+# │ Limits what the workflow can do with the automatic GITHUB_TOKEN.          │
+# │ Best practice: always set the minimum permissions needed.                 │
+# │ "contents: read" means the workflow can read repo files but not modify.  │
+# └──────────────────────────────────────────────────────────────────────────┘
+permissions:
+  contents: read
+
+# ┌──────────────────────────────────────────────────────────────────────────┐
 # │ PART C: GLOBAL ENVIRONMENT VARIABLES (env:)                              │
 # │                                                                          │
 # │ Variables defined here are available to ALL jobs and ALL steps.           │

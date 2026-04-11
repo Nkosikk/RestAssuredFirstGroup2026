@@ -23,6 +23,9 @@ name: "Segment 5: Allure Reporting"
 on:
   workflow_dispatch:   # Manual trigger only
 
+permissions:
+  contents: read       # Minimum required permission — read repository files
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -99,7 +102,7 @@ jobs:
         if: always()
         run: |
           echo "Installing Allure CLI globally..."
-          npm install -g allure-commandline --save-dev
+          npm install -g allure-commandline
           echo ""
           echo "=== Verify Allure CLI installation ==="
           allure --version

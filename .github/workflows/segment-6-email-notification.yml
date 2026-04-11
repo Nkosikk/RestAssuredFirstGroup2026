@@ -29,6 +29,9 @@ name: "Segment 6: Email Notification"
 on:
   workflow_dispatch:   # Manual trigger only
 
+permissions:
+  contents: read       # Minimum required permission — read repository files
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -61,7 +64,7 @@ jobs:
       - name: Install Allure CLI and generate report
         if: always()
         run: |
-          npm install -g allure-commandline --save-dev
+          npm install -g allure-commandline
           allure generate allure-results --clean -o allure-report || true
 
       # ┌────────────────────────────────────────────────────────────────────┐
@@ -232,6 +235,7 @@ jobs:
 #   2. Modify the email body — add your name and a custom message
 #   3. What happens if EMAIL_USERNAME or EMAIL_PASSWORD secrets are not set?
 #   4. Add a second attachment (e.g., testng-results.xml)
-#   5. Try replacing ${{ github.sha }} with ${{ github.sha | slice: 0, 7 }}
-#      to show only the first 7 characters of the commit hash
+#   5. Try showing only the first 7 characters of the commit SHA:
+#      Add a step: run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+#      Then use ${{ env.SHORT_SHA }} in the email body instead of ${{ github.sha }}
 # ─────────────────────────────────────────────────────────────────────────────
