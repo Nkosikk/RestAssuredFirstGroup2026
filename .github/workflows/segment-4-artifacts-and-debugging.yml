@@ -1,0 +1,155 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  SEGMENT 4: ARTIFACTS & DEBUGGING                                          ║
+# ║  Topics: Uploading artifacts, if: always(), debugging with shell commands  ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
+# LEARNING OBJECTIVES:
+#   1. Understand what GitHub Actions "artifacts" are and why we upload them
+#   2. Learn how to use "actions/upload-artifact" to save files from a run
+#   3. Understand "if: always()" — running steps even when previous ones fail
+#   4. Learn debugging techniques: listing directories, checking file existence
+#   5. Understand artifact retention (how long files are kept)
+#
+# HOW TO RUN:
+#   Go to GitHub → Actions tab → "Segment 4: Artifacts & Debugging"
+#   → "Run workflow"
+#
+# PREREQUISITES:
+#   - Segments 1-3 (workflow basics, Java, running tests)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: "Segment 4: Artifacts & Debugging"
+
+on:
+  workflow_dispatch:   # Manual trigger only
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # Prerequisites from previous segments
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and run tests
+        run: |
+          mvn clean install -DskipTests -q
+          mvn -U test -Dsurefire.suiteXmlFiles=testng.xml || true
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ CONCEPT: if: always()                                              │
+      # │                                                                    │
+      # │ By default, if any step FAILS, all following steps are SKIPPED.    │
+      # │ "if: always()" overrides this — the step runs NO MATTER WHAT.     │
+      # │                                                                    │
+      # │ This is critical for:                                              │
+      # │   - Uploading test reports (even when tests fail!)                 │
+      # │   - Debugging (checking what files were generated)                 │
+      # │   - Cleanup tasks                                                  │
+      # │                                                                    │
+      # │ Other useful conditions:                                           │
+      # │   if: failure()   → only runs when a previous step failed          │
+      # │   if: success()   → only runs when all previous steps passed       │
+      # │   if: cancelled() → only runs when the workflow was cancelled      │
+      # └────────────────────────────────────────────────────────────────────┘
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ DEBUGGING STEP: List generated files and folders                   │
+      # │                                                                    │
+      # │ When something goes wrong, you need to know what files exist.      │
+      # │ This step lists key directories to verify the build and test       │
+      # │ outputs were generated correctly.                                  │
+      # │                                                                    │
+      # │ "|| true" at the end of a command means: "if this command fails,  │
+      # │ don't fail the step." Useful when a directory might not exist.     │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: "DEBUG: Show generated folders"
+        if: always()
+        run: |
+          echo "📁 Project root:"
+          ls -la
+          echo ""
+          echo "📁 Target folder (build output):"
+          ls -la target || true
+          echo ""
+          echo "📁 Surefire reports (TestNG results):"
+          ls -la target/surefire-reports || true
+          echo ""
+          echo "📁 Allure results (JSON test data):"
+          ls -la allure-results || true
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ CONCEPT: ARTIFACTS                                                 │
+      # │                                                                    │
+      # │ Artifacts are files saved from a workflow run that you can         │
+      # │ DOWNLOAD later from the GitHub Actions UI.                         │
+      # │                                                                    │
+      # │ Use cases:                                                         │
+      # │   - Download test reports to review locally                        │
+      # │   - Share build outputs with other jobs or teams                   │
+      # │   - Keep evidence of test results                                  │
+      # │                                                                    │
+      # │ Key settings:                                                      │
+      # │   name: → Name shown in the GitHub UI for this artifact            │
+      # │   path: → Which files/folders to upload                            │
+      # │   retention-days: → How many days to keep (default: 90, max: 400) │
+      # └────────────────────────────────────────────────────────────────────┘
+
+      # Artifact 1: TestNG/Surefire Reports
+      - name: "Upload Artifact: TestNG Results"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results                        # Name in GitHub UI
+          path: target/surefire-reports/            # Folder to upload
+          retention-days: 30                        # Keep for 30 days
+
+      # Artifact 2: Allure Results (raw JSON data files)
+      - name: "Upload Artifact: Allure Results (JSON)"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results                      # Name in GitHub UI
+          path: allure-results/                     # Folder to upload
+          retention-days: 30                        # Keep for 30 days
+
+      # Final step: Show where to find artifacts
+      - name: Where to find your artifacts
+        if: always()
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "  📦 HOW TO DOWNLOAD ARTIFACTS"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "  1. Go to this workflow run in GitHub"
+          echo "  2. Scroll to the bottom of the run page"
+          echo "  3. You will see an 'Artifacts' section"
+          echo "  4. Click on 'test-results' or 'allure-results'"
+          echo "     to download a .zip file"
+          echo ""
+          echo "════════════════════════════════════════════════════════"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STUDENT EXERCISES:
+#   1. Run the workflow and download the "test-results" artifact — what's inside?
+#   2. Remove "if: always()" from an upload step, then make the test step fail
+#      (add "exit 1") — does the artifact still get uploaded?
+#   3. Change retention-days to 1 — when does the artifact expire?
+#   4. Add a new artifact that uploads the pom.xml file
+# ─────────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,116 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  SEGMENT 2: JAVA SETUP & MAVEN BUILD                                      ║
+# ║  Topics: Setting up Java, Maven caching, compiling code                    ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
+# LEARNING OBJECTIVES:
+#   1. Understand why we need to install Java on the runner
+#   2. Learn how "actions/setup-java" works and its configuration options
+#   3. Understand Maven dependency caching and why it speeds up builds
+#   4. Learn the difference between "mvn clean install" and "mvn test"
+#   5. Understand the -DskipTests flag
+#
+# HOW TO RUN:
+#   Go to GitHub → Actions tab → "Segment 2: Java Setup & Maven Build"
+#   → "Run workflow"
+#
+# PREREQUISITES:
+#   - Segment 1 (understand basic workflow structure)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: "Segment 2: Java Setup & Maven Build"
+
+on:
+  workflow_dispatch:   # Manual trigger only
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Step 1: Checkout code (always required — learned in Segment 1)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ STEP 2: SET UP JAVA (actions/setup-java)                           │
+      # │                                                                    │
+      # │ The Ubuntu runner does NOT come with the Java version we need.     │
+      # │ This action installs a specific Java version (JDK).                │
+      # │                                                                    │
+      # │ Configuration options:                                             │
+      # │   java-version: '21'      → Install Java 21 (LTS version)         │
+      # │   distribution: 'temurin' → Use Eclipse Temurin (free, open JDK)  │
+      # │   cache: maven            → Cache downloaded Maven dependencies    │
+      # │                                                                    │
+      # │ WHY CACHE?                                                         │
+      # │   Maven downloads many library files (.jar) from the internet.     │
+      # │   Caching saves these files between workflow runs so they don't    │
+      # │   need to be re-downloaded every time. This can save 2-5 minutes!  │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ STEP 3: VERIFY JAVA INSTALLATION                                   │
+      # │                                                                    │
+      # │ Good practice: verify that the tools you need are installed.       │
+      # │ "java -version" shows the installed Java version.                  │
+      # │ "mvn -version" shows the Maven version and confirms it can find   │
+      # │ the Java installation.                                             │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: Verify Java and Maven installation
+        run: |
+          echo "=== Java Version ==="
+          java -version
+          echo ""
+          echo "=== Maven Version ==="
+          mvn -version
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ STEP 4: BUILD THE PROJECT                                          │
+      # │                                                                    │
+      # │ Command: mvn clean install -DskipTests -q                          │
+      # │                                                                    │
+      # │ Breaking down the command:                                         │
+      # │   mvn          → Run Maven build tool                              │
+      # │   clean        → Delete previous build files (target/ folder)      │
+      # │   install      → Compile code, run tests, package into JAR,        │
+      # │                  and install to local repository                   │
+      # │   -DskipTests  → Skip running tests (we just want to compile)     │
+      # │   -q           → Quiet mode (less output, cleaner logs)            │
+      # │                                                                    │
+      # │ WHY SEPARATE BUILD AND TEST?                                       │
+      # │   We separate "compile" from "test" so that if compilation fails,  │
+      # │   we get a clear error. If we ran tests immediately, a compile     │
+      # │   error might be harder to distinguish from a test failure.        │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: Build project (compile only, skip tests)
+        run: mvn clean install -DskipTests -q
+
+      # Step 5: Verify the build output
+      - name: Verify build output
+        run: |
+          echo "=== Build output (target/ folder) ==="
+          ls -la target/
+          echo ""
+          echo "=== Compiled classes ==="
+          find target/classes -name "*.class" | head -20 || echo "No .class files found"
+          echo ""
+          echo "✅ Build completed successfully! The code compiles without errors."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STUDENT EXERCISES:
+#   1. Remove "-DskipTests" from the build command — what happens?
+#   2. Remove "-q" (quiet mode) — how does the output change?
+#   3. Change java-version to '17' — does the build still work?
+#   4. Remove "cache: maven" and compare build times with and without cache
+# ─────────────────────────────────────────────────────────────────────────────

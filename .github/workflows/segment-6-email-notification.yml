@@ -1,0 +1,237 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  SEGMENT 6: EMAIL NOTIFICATION                                             ║
+# ║  Topics: Parsing XML, setting env vars, sending email, SMTP, attachments  ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
+# LEARNING OBJECTIVES:
+#   1. Learn how to parse XML files using shell commands (grep)
+#   2. Understand $GITHUB_ENV — how to pass data between workflow steps
+#   3. Learn how the email sending action works (SMTP, authentication)
+#   4. Understand Gmail App Passwords and why they are needed
+#   5. Learn how to attach files to emails in a workflow
+#   6. Understand GitHub context variables (${{ github.* }})
+#
+# HOW TO RUN:
+#   Go to GitHub → Actions tab → "Segment 6: Email Notification"
+#   → "Run workflow"
+#
+# PREREQUISITES:
+#   - Segments 1-5 (all previous concepts)
+#   - GitHub Secrets configured:
+#       EMAIL_USERNAME  → Your Gmail address (e.g., you@gmail.com)
+#       EMAIL_PASSWORD  → Gmail App Password (NOT your regular password!)
+#                         Generate at: https://myaccount.google.com/apppasswords
+#       DB_URL, DB_USERNAME, DB_PASSWORD → Database credentials
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: "Segment 6: Email Notification"
+
+on:
+  workflow_dispatch:   # Manual trigger only
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # Prerequisites from previous segments
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and run tests
+        run: |
+          mvn clean install -DskipTests -q
+          mvn -U test -Dsurefire.suiteXmlFiles=testng.xml || true
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+      - name: Install Allure CLI and generate report
+        if: always()
+        run: |
+          npm install -g allure-commandline --save-dev
+          allure generate allure-results --clean -o allure-report || true
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ CONCEPT: EXTRACTING DATA FROM XML (Test Summary)                   │
+      # │                                                                    │
+      # │ After tests run, TestNG creates an XML file with results.          │
+      # │ We need to extract the pass/fail/skip counts from this XML         │
+      # │ so we can include them in our email.                               │
+      # │                                                                    │
+      # │ TOOLS USED:                                                        │
+      # │   grep -oE 'pattern' → Extract text matching a regex pattern       │
+      # │   head -1            → Take only the first match                   │
+      # │   [0-9]+             → Regex: one or more digits                   │
+      # │                                                                    │
+      # │ PASSING DATA BETWEEN STEPS: $GITHUB_ENV                            │
+      # │   Normally, variables set in one step are NOT available in the     │
+      # │   next step. To share data between steps, we write to a special   │
+      # │   file: $GITHUB_ENV                                                │
+      # │                                                                    │
+      # │   echo "MY_VAR=value" >> $GITHUB_ENV                               │
+      # │                                                                    │
+      # │   After this, ${{ env.MY_VAR }} is available in ALL later steps.  │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: "Extract Test Summary from XML"
+        if: always()
+        run: |
+          echo "=== Extracting test results from TestNG XML ==="
+
+          if [ -f target/surefire-reports/testng-results.xml ]; then
+            echo "✅ TestNG results file found!"
+            echo ""
+
+            # Show the relevant line from the XML
+            echo "Raw XML header:"
+            head -3 target/surefire-reports/testng-results.xml
+            echo ""
+
+            # Extract each count using grep with regex
+            # grep -oE 'total="[0-9]+"' → finds: total="5"
+            # grep -oE '[0-9]+'         → extracts just: 5
+            TOTAL=$(grep -oE 'total="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            PASSED=$(grep -oE 'passed="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            FAILED=$(grep -oE 'failed="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+            SKIPPED=$(grep -oE 'skipped="[0-9]+"' target/surefire-reports/testng-results.xml | head -1 | grep -oE '[0-9]+')
+
+            echo "Extracted values:"
+            echo "  Total:   ${TOTAL:-0}"
+            echo "  Passed:  ${PASSED:-0}"
+            echo "  Failed:  ${FAILED:-0}"
+            echo "  Skipped: ${SKIPPED:-0}"
+
+            # Write to $GITHUB_ENV to share with later steps
+            # ${TOTAL:-0} means: use $TOTAL if set, otherwise use "0"
+            echo "TEST_TOTAL=${TOTAL:-0}" >> $GITHUB_ENV
+            echo "TEST_PASSED=${PASSED:-0}" >> $GITHUB_ENV
+            echo "TEST_FAILED=${FAILED:-0}" >> $GITHUB_ENV
+            echo "TEST_SKIPPED=${SKIPPED:-0}" >> $GITHUB_ENV
+          else
+            echo "⚠️ TestNG results file NOT found"
+            echo "Setting all values to N/A"
+            echo "TEST_TOTAL=N/A" >> $GITHUB_ENV
+            echo "TEST_PASSED=N/A" >> $GITHUB_ENV
+            echo "TEST_FAILED=N/A" >> $GITHUB_ENV
+            echo "TEST_SKIPPED=N/A" >> $GITHUB_ENV
+          fi
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ VERIFY: Confirm env vars were set correctly                        │
+      # │                                                                    │
+      # │ This step reads the variables we set in the previous step          │
+      # │ using ${{ env.VARIABLE_NAME }} syntax.                             │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: "Verify: Environment variables are set"
+        if: always()
+        run: |
+          echo "=== Values available for email ==="
+          echo "TEST_TOTAL   = ${{ env.TEST_TOTAL }}"
+          echo "TEST_PASSED  = ${{ env.TEST_PASSED }}"
+          echo "TEST_FAILED  = ${{ env.TEST_FAILED }}"
+          echo "TEST_SKIPPED = ${{ env.TEST_SKIPPED }}"
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ CONCEPT: SENDING EMAIL (dawidd6/action-send-mail)                  │
+      # │                                                                    │
+      # │ This is a third-party GitHub Action from the marketplace.          │
+      # │ It sends emails using SMTP (Simple Mail Transfer Protocol).        │
+      # │                                                                    │
+      # │ HOW SMTP WORKS (simplified):                                       │
+      # │   Your workflow → connects to smtp.gmail.com:587 → authenticates  │
+      # │   with username/password → sends the email → Gmail delivers it    │
+      # │                                                                    │
+      # │ GMAIL APP PASSWORD:                                                │
+      # │   Gmail blocks direct password login from apps.                    │
+      # │   You need an "App Password" — a 16-character code generated at:  │
+      # │   https://myaccount.google.com/apppasswords                        │
+      # │   (Requires 2-Step Verification to be enabled)                     │
+      # │                                                                    │
+      # │ CONFIGURATION:                                                     │
+      # │   server_address: smtp.gmail.com  → Gmail's SMTP server           │
+      # │   server_port: 587                → Port for TLS encryption        │
+      # │   username/password               → Gmail credentials (secrets)    │
+      # │   subject:                        → Email subject line             │
+      # │   to:                             → Recipient email address        │
+      # │   from:                           → Sender email address           │
+      # │   body: |                         → Multi-line email body          │
+      # │   attachments:                    → File(s) to attach              │
+      # │                                                                    │
+      # │ GITHUB CONTEXT VARIABLES (${{ github.* }}):                        │
+      # │   github.repository → "owner/repo-name"                           │
+      # │   github.ref_name   → branch name (e.g., "main")                  │
+      # │   github.sha        → full commit hash                            │
+      # │   github.run_number → sequential run counter                      │
+      # │   github.actor      → who triggered the workflow                  │
+      # │   github.run_id     → unique ID for this run (used in URLs)       │
+      # │   github.server_url → "https://github.com"                        │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: Send Email with Test Report
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Rest Assured Automation Test Results - Allure Report for 1st Group
+          to: fitness.seed@gmail.com
+          from: ${{ secrets.EMAIL_USERNAME }}
+          body: |
+            Hi Team,
+            
+            ═══════════════════════════════════════════════════════════
+                          TEST EXECUTION REPORT
+            ═══════════════════════════════════════════════════════════
+            
+            Repository  :  ${{ github.repository }}
+            Branch      :  ${{ github.ref_name }}
+            Commit      :  ${{ github.sha }}
+            Run Number  :  ${{ github.run_number }}
+            Triggered by:  ${{ github.actor }}
+            Status      :  COMPLETED
+            
+            ───────────────────────────────────────────────────────────
+                          TEST RESULTS SUMMARY
+            ───────────────────────────────────────────────────────────
+            
+            Total Tests :  ${{ env.TEST_TOTAL }}
+            ✅ Passed    :  ${{ env.TEST_PASSED }}
+            ❌ Failed    :  ${{ env.TEST_FAILED }}
+            ⏭️ Skipped   :  ${{ env.TEST_SKIPPED }}
+            
+            ═══════════════════════════════════════════════════════════
+            
+            Please find the Allure test report attached to this email.
+            
+            For more details, visit:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Kind Regards,
+            Team Lead
+            
+            ═══════════════════════════════════════════════════════════
+
+          attachments: target/surefire-reports/emailable-report.html
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STUDENT EXERCISES:
+#   1. Change the "to:" email to your own address and see if you receive it
+#   2. Modify the email body — add your name and a custom message
+#   3. What happens if EMAIL_USERNAME or EMAIL_PASSWORD secrets are not set?
+#   4. Add a second attachment (e.g., testng-results.xml)
+#   5. Try replacing ${{ github.sha }} with ${{ github.sha | slice: 0, 7 }}
+#      to show only the first 7 characters of the commit hash
+# ─────────────────────────────────────────────────────────────────────────────

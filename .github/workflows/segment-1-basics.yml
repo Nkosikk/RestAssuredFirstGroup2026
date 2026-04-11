@@ -1,0 +1,119 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  SEGMENT 1: WORKFLOW BASICS                                                ║
+# ║  Topics: Workflow name, triggers, environment variables, checkout, shell    ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+#
+# LEARNING OBJECTIVES:
+#   1. Understand the structure of a GitHub Actions workflow file (YAML format)
+#   2. Learn how workflow triggers (on:) control when pipelines run
+#   3. Learn how global environment variables work
+#   4. Understand the "checkout" action — why we need it
+#   5. Run basic shell commands inside a workflow
+#
+# HOW TO RUN:
+#   Go to GitHub → Actions tab → "Segment 1: Workflow Basics" → "Run workflow"
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ PART A: WORKFLOW NAME                                                    │
+# │                                                                          │
+# │ The "name:" field gives your workflow a human-readable label.            │
+# │ This name appears in the GitHub Actions UI.                              │
+# └──────────────────────────────────────────────────────────────────────────┘
+name: "Segment 1: Workflow Basics"
+
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ PART B: TRIGGERS (on:)                                                   │
+# │                                                                          │
+# │ The "on:" section defines WHEN this workflow runs.                       │
+# │ Common triggers:                                                         │
+# │   - push: runs when code is pushed to a branch                          │
+# │   - pull_request: runs when a PR is opened/updated                      │
+# │   - workflow_dispatch: allows MANUAL triggering from the GitHub UI       │
+# │                                                                          │
+# │ For this learning exercise, we only use workflow_dispatch so students    │
+# │ can trigger it manually without needing to push code.                    │
+# └──────────────────────────────────────────────────────────────────────────┘
+on:
+  workflow_dispatch:   # Manual trigger only — click "Run workflow" in GitHub UI
+
+  # In the full pipeline, we also have:
+  # push:
+  #   branches: [ main ]        # Runs automatically when code is pushed to main
+  # pull_request:
+  #   branches: [ main ]        # Runs automatically when a PR targets main
+
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ PART C: GLOBAL ENVIRONMENT VARIABLES (env:)                              │
+# │                                                                          │
+# │ Variables defined here are available to ALL jobs and ALL steps.           │
+# │ Think of them as "constants" for the entire workflow.                     │
+# └──────────────────────────────────────────────────────────────────────────┘
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Ensures Node.js 24 compatibility
+  MY_CUSTOM_VARIABLE: "Hello from Segment 1" # Example custom variable
+
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ PART D: JOBS                                                             │
+# │                                                                          │
+# │ A workflow contains one or more "jobs". Each job runs on a virtual       │
+# │ machine (called a "runner"). Jobs run in PARALLEL by default.            │
+# │                                                                          │
+# │ Key settings:                                                            │
+# │   - runs-on: which operating system to use (ubuntu-latest, windows, mac)│
+# │   - timeout-minutes: max time before the job is cancelled               │
+# └──────────────────────────────────────────────────────────────────────────┘
+jobs:
+  basics:
+    runs-on: ubuntu-latest       # Use a fresh Ubuntu Linux virtual machine
+    timeout-minutes: 10          # Cancel if it takes longer than 10 minutes
+
+    steps:
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ STEP 1: CHECKOUT CODE                                              │
+      # │                                                                    │
+      # │ The runner starts with an EMPTY workspace.                         │
+      # │ "actions/checkout@v4" clones your repository code onto the runner. │
+      # │ Without this step, your code files would NOT be available.         │
+      # │                                                                    │
+      # │ "uses:" means we are using a pre-built action from the marketplace │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ┌────────────────────────────────────────────────────────────────────┐
+      # │ STEP 2: RUN SHELL COMMANDS                                         │
+      # │                                                                    │
+      # │ "run:" executes shell commands directly on the runner.             │
+      # │ Single-line commands use: run: <command>                           │
+      # │ Multi-line commands use: run: |                                    │
+      # │                            command1                                │
+      # │                            command2                                │
+      # └────────────────────────────────────────────────────────────────────┘
+      - name: Check Node.js version
+        run: node -v
+
+      - name: Print environment variables and explore the workspace
+        run: |
+          echo "=== Custom Environment Variable ==="
+          echo "MY_CUSTOM_VARIABLE = $MY_CUSTOM_VARIABLE"
+          echo ""
+          echo "=== Built-in GitHub Variables ==="
+          echo "Repository : $GITHUB_REPOSITORY"
+          echo "Branch     : $GITHUB_REF_NAME"
+          echo "Actor      : $GITHUB_ACTOR"
+          echo "Run Number : $GITHUB_RUN_NUMBER"
+          echo ""
+          echo "=== Workspace Contents (your cloned repo files) ==="
+          ls -la
+          echo ""
+          echo "=== Operating System Info ==="
+          uname -a
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STUDENT EXERCISES:
+#   1. Add another environment variable under "env:" and print it in a step
+#   2. Change "runs-on" to "windows-latest" — what changes?
+#   3. Uncomment the "push:" trigger and push a commit — does it run?
+#   4. Add a new step that runs: echo "My name is <your name>"
+# ─────────────────────────────────────────────────────────────────────────────
