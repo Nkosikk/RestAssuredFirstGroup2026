@@ -15,13 +15,13 @@ public class DatabaseConnection {
 
         // Fallback to default if not set (for local development)
         if (dbURL == null) {
-            dbURL = System.getProperty("dbURL");
+            dbURL = "jdbc:mysql://102.222.124.22:3306/ndosian6b8b7_teaching";
         }
         if (dbUsername == null) {
-            dbUsername = System.getProperty("dbUsername");
+            dbUsername = "ndosian6b8b7_teaching";
         }
         if (dbPassword == null) {
-            dbPassword = System.getProperty("dbPassword");
+            dbPassword = "^{SF0a=#~[~p)@l1";
         }
 
         try (Connection connection = DriverManager.getConnection(dbURL, dbUsername, dbPassword)) {
