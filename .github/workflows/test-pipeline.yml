@@ -178,6 +178,6 @@ jobs:
             
             ═══════════════════════════════════════════════════════════
 
-          # Attachment: Allure report HTML file
+          # Attachment: Allure reports HTML file
           attachments: test-results/index.html
 
