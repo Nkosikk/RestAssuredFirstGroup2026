@@ -27,7 +27,7 @@ jobs:
           cache: maven
 
       - name: Build project and run tests
-        run: mvn clean test
+        run: mvn clean install -DskipTests -q
 
       - name: Run TestNG suite (testng.xml)
         timeout-minutes: 15
