@@ -179,5 +179,5 @@ jobs:
             ═══════════════════════════════════════════════════════════
 
           # Attachment: Allure reports HTML file
-          attachments: test-results/index.html
+          attachments: target/surefire-reports/emailable-report.html
 
