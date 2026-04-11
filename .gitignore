@@ -4,7 +4,6 @@ target/
 !**/src/basic.UserRegistration/**/target/
 allure-results/
 .allure
-.config.properties
 .ai-code-tracking.json
 ### IntelliJ IDEA ###
 .idea/modules.xml
