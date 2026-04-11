@@ -29,5 +29,12 @@ jobs:
       - name: Build project and run tests
         run: mvn clean test
 
+      - name: Run TestNG suite (testng.xml)
+        timeout-minutes: 15
+        run: mvn -U test -Dsurefire.suiteXmlFiles=testng.xml
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
 
