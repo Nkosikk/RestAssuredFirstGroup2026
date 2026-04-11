@@ -71,6 +71,7 @@ jobs:
         with:
           name: test-results
           path: target/surefire-reports/
+          retention-days: 30
 
       # Step 8: Upload Allure test results JSON files
       # These JSON files are used to generate the Allure HTML report
@@ -80,6 +81,7 @@ jobs:
         with:
           name: allure-results
           path: allure-results/
+          retention-days: 30
 
       # Step 9: Install Allure CLI globally using npm
           # Required to generate HTML reports from test results
@@ -122,10 +124,12 @@ jobs:
         with:
           name: allure-report
           path: allure-report/
+          retention-days: 30
 
       # Step 13: Send test report via email using Gmail SMTP
       # Notifies team of test results with attached Allure report
       - name: Send Email with Allure Report
+        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           # SMTP server configuration
