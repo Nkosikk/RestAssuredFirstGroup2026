@@ -5,8 +5,9 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+
 env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:
@@ -40,21 +41,20 @@ jobs:
       - name: Show generated folders
         if: always()
         run: |
-            echo "Project root:"
-            ls -la
-            echo "Target folder:"
-            ls -la target || true
-            echo "Allure results folder:"
-            ls -la allure-results || true
-
+          echo "Project root:"
+          ls -la
+          echo "Target folder:"
+          ls -la target || true
+          echo "Allure results folder:"
+          ls -la allure-results || true
 
       - name: Upload TestNG results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-         name: test-results
-         path: target/surefire-reports/
-         retention-days: 30
+          name: test-results
+          path: target/surefire-reports/
+          retention-days: 30
 
       - name: Upload Allure results
         if: always()
@@ -64,3 +64,49 @@ jobs:
           path: allure-results/
           retention-days: 30
 
+      - name: Send Email with Allure Report
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Rest Assured Automation Test Results - Allure Report for 1st Group
+          to: fitness.seed@gmail.com
+          from: ${{ secrets.EMAIL_USERNAME }}
+          body: |
+            Hi Team,
+            
+            ═══════════════════════════════════════════════════════════
+                          TEST EXECUTION REPORT
+            ═══════════════════════════════════════════════════════════
+            
+            Repository  :  ${{ github.repository }}
+            Branch      :  ${{ github.ref_name }}
+            Commit      :  ${{ github.sha }}
+            Run Number  :  ${{ github.run_number }}
+            Triggered by:  ${{ github.actor }}
+            Status      :  COMPLETED
+            
+            ───────────────────────────────────────────────────────────
+                          TEST RESULTS SUMMARY
+            ───────────────────────────────────────────────────────────
+            
+            Total Tests :  ${{ env.TEST_TOTAL }}
+            ✅ Passed    :  ${{ env.TEST_PASSED }}
+            ❌ Failed    :  ${{ env.TEST_FAILED }}
+            ⏭️ Skipped   :  ${{ env.TEST_SKIPPED }}
+            
+            ═══════════════════════════════════════════════════════════
+            
+            Please find the Allure test report attached to this email.
+            
+            For more details, visit:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Kind Regards,
+            Team Lead
+            
+            ═══════════════════════════════════════════════════════════
+          attachments: target/surefire-reports/emailable-report.html
