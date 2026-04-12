@@ -64,7 +64,7 @@ jobs:
           path: allure-results/
           retention-days: 30
 
-      - name: Send Email with Allure Report
+      - name: Send Email with Emailable Report Attachment
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
