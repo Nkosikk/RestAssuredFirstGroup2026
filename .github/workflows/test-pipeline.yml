@@ -64,6 +64,3 @@ jobs:
           path: allure-results/
           retention-days: 30
 
-      - name: Install Allure CLI
-        if: always()
-        run: npm install -g allure-commandline --save-dev
