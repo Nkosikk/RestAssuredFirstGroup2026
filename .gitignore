@@ -3,6 +3,8 @@ target/
 !**/src/main/**/target/
 !**/src/basic.UserRegistration/**/target/
 allure-results/
+.allure
+.ai-code-tracking.json
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
