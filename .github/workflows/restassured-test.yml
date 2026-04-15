@@ -56,5 +56,14 @@ jobs:
          path: target/surefire-reports/
          retention-days: 30
 
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+             name: allure-results
+             path: allure-results/
+             retention-days: 30
+
+
 
 
