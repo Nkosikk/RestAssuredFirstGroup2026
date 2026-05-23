@@ -95,7 +95,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}           # Gmail app-specific password
           # Email content
           subject: Rest Assured Automation Test Results - Allure Report for 1st Group  # Email subject line
-          to: shayseh@gmail.com                        # Recipient email address
+          to: fitness.seed@gmail.com                        # Recipient email address
           from: ${{ secrets.EMAIL_USERNAME }}               # Sender email address
           # Message body with test execution details and formatting
           body: |
